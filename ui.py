@@ -29,7 +29,7 @@ class QuizInterface:
         self.score_label.grid(row=0, column=1)
         self.question_text = self.canvas.create_text(150,
                                                      125,
-                                                     text="Custom question",
+                                                     text=self.quiz.next_question(),
                                                      font=("Arial", 20, "italic"),
                                                      width=280)
         self.false_image = PhotoImage(file="images/false.png")
@@ -38,7 +38,7 @@ class QuizInterface:
                                    bd=0,
                                    padx=20,
                                    pady=20,
-                                   command=self.check_if_false)
+                                   command=lambda x="False": self.display_result(x))
         self.false_button.grid(row=2, column=0)
         self.true_image = PhotoImage(file="images/true.png")
         self.true_button = Button(image=self.true_image,
@@ -46,9 +46,8 @@ class QuizInterface:
                                   bd=0,
                                   padx=20,
                                   pady=20,
-                                  command=self.check_if_true)
+                                  command=lambda x="False": self.display_result(x))
         self.true_button.grid(row=2, column=1)
-        self.display_next_question()
         self.window.mainloop()
 
     def display_next_question(self):
@@ -61,35 +60,18 @@ class QuizInterface:
 
     def display_final_score(self):
         """Display final score"""
-        self.canvas.itemconfig(self.question_text, text=f"""YOU'VE COMPLETED THE QUIZ!\n
-                  Your final score was {self.quiz.score}/{len(self.quiz.question_list)}""")
+        self.canvas.itemconfig(self.question_text, text=f"""YOU'VE COMPLETED THE QUIZ!\nYour final score was 
+{self.quiz.score}/{len(self.quiz.question_list)}""")
         self.window.after(4000, func=self.window.destroy)
 
-    def display_winning(self):
-        """Display an info showing that the player selected the right answer"""
-        self.canvas.itemconfig(self.question_text, text="You're right!")
-        self.score_label.config(text=f"Score: {self.quiz.score}",
-                                fg="white",
-                                bg=THEME_COLOR)
-        self.window.after(2000, func=self.display_next_question)
-
-    def display_losing(self):
-        """Display an info showing that the player selected the wrong answer"""
-        self.canvas.itemconfig(self.question_text, text="You're wrong!")
-        self.window.after(2000, func=self.display_next_question)
-
-    def check_if_true(self):
+    def display_result(self, answer):
         """Check if the True answer is right or wrong"""
-        # THE REASON I DIDN'T MAKE ONE FUNCTION WITH AN ARGUMENT "True" OR "False" IS BECAUSE A TKINTER
-        # REQUIREMENT - A COMMAND FUNCTION FOR A BUTTON MUST NOT CONTAIN ARGUMENTS. OR AM I WRONG? (KH)
-        if self.quiz.check_answer("True"):
-            self.display_winning()
+        if self.quiz.check_answer(answer):
+            self.canvas.itemconfig(self.question_text, text="You're right!")
+            self.score_label.config(text=f"Score: {self.quiz.score}",
+                                    fg="white",
+                                    bg=THEME_COLOR)
+            self.window.after(2000, func=self.display_next_question)
         else:
-            self.display_losing()
-
-    def check_if_false(self):
-        """Check if the False answer is right or wrong"""
-        if self.quiz.check_answer("False"):
-            self.display_winning()
-        else:
-            self.display_losing()
+            self.canvas.itemconfig(self.question_text, text="You're wrong!")
+            self.window.after(2000, func=self.display_next_question)
